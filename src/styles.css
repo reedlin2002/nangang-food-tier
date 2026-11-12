@@ -96,12 +96,15 @@ h2 { margin: 9px 0 0; font-size: 24px; font-weight: 700; letter-spacing: -.055em
 .tier-places .card-image { min-height: 109px; }
 .image-tier { position: absolute; top: 7px; left: 7px; display: grid; width: 23px; height: 23px; place-items: center; background: var(--tier); color: var(--tier-text); font: 12px var(--mono); }
 .image-caption { position: absolute; right: 5px; bottom: 5px; padding: 3px 4px; background: #20231fc9; color: white; font: 7px var(--mono); }
+.photo-credit { display: block; margin: 0 8px 6px; color: #aaa58f; font-size: 10px; text-align: center; }
 .card-content { min-width: 0; padding: 11px 12px 10px; }
 .tier-places .card-content { padding: 9px 10px 8px; }
 .card-meta { display: flex; align-items: center; gap: 6px; color: #8a8b84; font-size: 8px; }
 .card-meta i { width: 3px; height: 3px; border-radius: 50%; background: #c2beb1; }
 .card-content h3 { overflow: hidden; margin: 5px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: -.03em; text-overflow: ellipsis; white-space: nowrap; }
 .card-note { overflow: hidden; margin: 0; color: #777a72; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.card-drawback { overflow: hidden; margin: 4px 0 0; color: #918b7f; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.data-state { margin: 0; padding: 42px 0; color: #777a72; text-align: center; font-size: 12px; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-top: 9px; padding-top: 7px; border-top: 1px solid #eeece5; color: #54574f; font-size: 8px; }
 .card-footer > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-footer a { display: grid; width: 20px; height: 20px; flex: 0 0 auto; place-items: center; background: var(--tier-soft); color: #4c4e46; }
@@ -120,6 +123,23 @@ footer { display: flex; min-height: 82px; align-items: center; justify-content: 
 footer > span b { margin-left: 8px; color: #555850; font-weight: 500; }
 footer > a:last-child { color: #5b5e56; }
 .footer-brand { color: var(--ink); transform: scale(.9); transform-origin: left center; }
+.nav-cta { border: 0; cursor: pointer; }
+.admin-panel { min-height: 65vh; padding: 36px 0 60px; }
+.admin-panel > button, .admin-toolbar button, .admin-list button, .admin-form button, .admin-login button { min-height: 36px; padding: 7px 13px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+.admin-panel h2 { margin: 24px 0; }
+.admin-panel h3 { margin: 12px 0; }
+.admin-form, .admin-login { display: grid; max-width: 680px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; padding: 20px; border: 1px solid var(--line); background: var(--paper); }
+.admin-form h3, .admin-form > button, .admin-login p, .admin-login button { grid-column: 1 / -1; }
+.admin-form label, .admin-login label { display: grid; gap: 5px; color: var(--muted); font-size: 11px; }
+.admin-form input, .admin-form select, .admin-login input { width: 100%; min-height: 38px; padding: 7px 9px; border: 1px solid var(--line); background: white; color: var(--ink); }
+.admin-form button[type="submit"], .admin-login button { background: var(--ink); color: white; }
+.admin-toolbar { display: flex; max-width: 680px; align-items: center; justify-content: space-between; margin-bottom: 18px; color: var(--muted); font-size: 12px; }
+.admin-seed { display: flex; max-width: 680px; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 18px; padding: 13px 16px; background: #eeece5; color: var(--muted); font-size: 11px; }
+.admin-seed p { margin: 0; }
+.admin-seed button { min-height: 36px; flex: 0 0 auto; padding: 7px 13px; border: 0; background: var(--ink); color: white; cursor: pointer; }
+.admin-list { max-width: 680px; margin: 12px 0; padding: 0; list-style: none; }
+.admin-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.admin-panel [role="alert"] { color: #a43f28; }
 
 @media (min-width: 1440px) { .site-shell { padding-right: 80px; padding-left: 80px; } }
 @media (max-width: 900px) {
@@ -179,5 +199,115 @@ footer > a:last-child { color: #5b5e56; }
   .coming-status { padding-left: 46px; }
   footer { min-height: 106px; flex-wrap: wrap; gap: 4px 10px; padding: 16px 0; }
   footer > span { order: 3; width: 100%; }
+  .admin-form, .admin-login { grid-template-columns: 1fr; padding: 14px; }
+  .admin-form h3, .admin-form > button, .admin-login p, .admin-login button { grid-column: 1; }
+  .admin-seed { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+/* Tier-board visual direction based on the supplied dark ranking reference. */
+:root {
+  color-scheme: dark;
+  --ink: #f3f0e7;
+  --muted: #aaa79c;
+  --line: #34332e;
+  --paper: #171715;
+  --orange: #d6b34f;
+  background: #0c0c0b;
+}
+body { background: #0c0c0b; color: var(--ink); }
+.site-shell { max-width: 1840px; padding: 0 44px; }
+.topbar { height: 74px; border-color: #2d2c27; }
+.brand-mark { background: #d6b34f; color: #17150f; }
+.brand small { color: #969184; }
+.topbar nav a { color: #a5a196; }
+.topbar nav .nav-active { color: #f5f0e1; }
+.nav-active::after { background: #d6b34f; }
+.nav-cta { background: #d6b34f; color: #17150f; font-weight: 700; }
+.intro { min-height: 0; display: block; padding: 18px 0 8px; text-align: left; }
+.intro-copy { padding: 0; }
+.intro-copy > .eyebrow { color: #d2b75f; }
+.intro-copy > .eyebrow > span:first-child { background: #d2b75f; }
+.intro h1 { margin: 0; color: #f4f1e9; font-size: clamp(32px, 4vw, 44px); letter-spacing: .01em; }
+.intro h1 span { color: #d6b34f; }
+.notice { min-height: 40px; border: 1px solid #282720; background: #141411; color: #b8b3a3; }
+.notice-dot { background: #d6b34f; }
+.notice a { color: #e6d9ad; }
+.ranking-section { padding: 34px 0 40px; }
+.section-heading { align-items: center; }
+.section-heading .eyebrow { color: #c4a94e; }
+.section-heading h2 { color: #f3f0e7; font-size: 22px; }
+.view-switch { border-color: #35342f; background: #151513; }
+.view-switch button { color: #aaa69b; }
+.view-switch button.selected { background: #d6b34f; color: #17150f; }
+.filters { height: 62px; align-items: center; padding: 11px 0; }
+.search-field, .cuisine-select { border-color: #37362f; background: #151513; color: #c4c0b5; }
+.search-field input, .cuisine-select select { color: #f1eee6; }
+.search-field input::placeholder { color: #777469; }
+.filter-count { color: #8f8b7e; }
+.tier-board { display: grid; gap: 12px; border: 0; }
+.tier-row { --tier: #d6b34f; --tier-text: #17150f; --tier-soft: #242115; display: grid; min-height: 276px; grid-template-columns: 112px minmax(0, 1fr) 22px; gap: 14px; padding: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tier) 65%, #282720); border-radius: 13px; background: color-mix(in srgb, var(--tier) 9%, #10100e); }
+.tier-s { --tier: #d5b14c; --tier-text: #17150f; --tier-soft: #302812; }
+.tier-a { --tier: #74c8a3; --tier-text: #0a1911; --tier-soft: #13271d; }
+.tier-b { --tier: #79b9d6; --tier-text: #0a1720; --tier-soft: #14242c; }
+.tier-c { --tier: #b9b7ae; --tier-text: #1a1a17; --tier-soft: #252521; }
+.tier-d { --tier: #d98976; --tier-text: #21110d; --tier-soft: #2c1915; }
+.tier-label { align-items: center; justify-content: center; flex-direction: column; gap: 3px; padding: 14px 7px; border-radius: 9px; background: var(--tier); text-align: center; }
+.tier-label strong { display: block; width: auto; height: auto; background: transparent; color: var(--tier-text); font: 700 58px/.98 'DM Mono', monospace; }
+.tier-label span { padding: 0; color: var(--tier-text); font-size: 13px; font-weight: 700; }
+.tier-places { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 226px), 1fr)); align-content: stretch; align-items: stretch; gap: 10px; min-width: 0; }
+.tier-places .restaurant-card, .list-view .restaurant-card { display: flex; width: 100%; max-width: none; min-width: 0; min-height: 258px; flex-direction: column; align-items: stretch; border: 1px solid #1c1c19; border-radius: 10px; background: #151513; transition: border-color .18s ease, background .18s ease; }
+.tier-places .restaurant-card:hover, .list-view .restaurant-card:hover { border-color: color-mix(in srgb, var(--tier) 72%, #34332e); background: #1a1a17; }
+.card-image, .tier-places .card-image { width: 148px; min-height: 148px; height: 148px; flex: 0 0 148px; align-self: center; margin: 12px auto 3px; overflow: hidden; border: 2px solid color-mix(in srgb, var(--tier) 60%, #4a483c); border-radius: 50%; background-color: #28271f; background-position: center; background-size: cover; }
+.card-image.no-photo { position: relative; display: grid; place-items: center; background: radial-gradient(circle at 50% 44%, #4b4634 0 24%, #26241c 25% 46%, #171715 47% 100%); }
+.card-image.no-photo::before { width: 55px; height: 55px; border: 2px solid #c8a844; border-radius: 50%; background: radial-gradient(circle, #d4b251 0 16%, transparent 18%); content: ''; opacity: .82; }
+.image-tier, .image-caption { display: none; }
+.card-content, .tier-places .card-content { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: center; padding: 7px 15px 13px; text-align: center; }
+.card-meta { min-height: 20px; justify-content: center; gap: 7px; color: #aaa69b; font-size: 10px; }
+.card-meta i { background: #777264; }
+.card-content h3 { max-width: 100%; margin: 4px 0 6px; color: #f4f1e9; font-size: 16px; letter-spacing: 0; }
+.card-note, .card-drawback { max-width: 100%; color: #aaa69b; font-size: 10px; }
+.card-drawback { color: #858174; }
+.card-footer { width: 100%; justify-content: center; margin-top: auto; padding-top: 9px; border-color: #302f29; color: #d2bc70; font-size: 10px; }
+.card-footer a { width: 25px; height: 25px; border: 1px solid color-mix(in srgb, var(--tier) 30%, #34332e); border-radius: 50%; background: var(--tier-soft); color: var(--tier); }
+.card-footer a.map-link { display: inline-flex; width: auto; min-height: 30px; align-items: center; gap: 6px; padding: 0 9px; border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.card-footer a.map-link svg { width: 12px; height: 12px; }
+.empty-tier { grid-column: 1 / -1; justify-self: stretch; align-self: stretch; display: grid; place-content: center; min-height: 245px; border: 1px dashed #34332e; border-radius: 9px; color: #777469; text-align: center; }
+.tier-index { align-self: start; padding: 6px 2px; color: #827d70; }
+.list-view { grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; padding-top: 0; }
+.no-results, .data-state { color: #aaa69b; }
+.coming-status b { background: #2b291f; color: #e0c76c; }
+footer { border-color: #302f29; color: #8e8a7e; }
+footer > a:last-child, footer > span b { color: #d6c27a; }
+.admin-panel { color: #eeeae0; }
+.admin-panel > button, .admin-toolbar button, .admin-list button, .admin-form button, .admin-login button { border-color: #3a3932; background: #191916; color: #eeeae0; }
+.admin-form, .admin-login { border-color: #38372f; background: #151513; }
+.admin-form input, .admin-form select, .admin-login input { border-color: #3a3932; background: #0f0f0d; color: #eeeae0; }
+.admin-form button[type="submit"], .admin-login button { border-color: #d6b34f; background: #d6b34f; color: #17150f; }
+.admin-seed { background: #171712; }
+.admin-seed button { background: #d6b34f; color: #17150f; }
+.admin-list li { border-color: #34332e; }
+@media (max-width: 760px) {
+  .site-shell { padding: 0 18px; }
+  .topbar { height: 65px; }
+  .intro { min-height: 155px; padding: 24px 0 17px; }
+  .intro h1 { font-size: 42px; }
+  .ranking-section { padding-top: 26px; }
+  .tier-row { min-height: 0; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 6px; }
+  .tier-label { grid-column: 1; grid-row: 1; padding: 10px 3px; }
+  .tier-label strong { font-size: 34px; }
+  .tier-label span { font-size: 10px; }
+  .tier-places { grid-column: 2; grid-row: 1; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 7px; }
+  .tier-places .restaurant-card, .list-view .restaurant-card { min-height: 220px; }
+  .card-image, .tier-places .card-image { width: 112px; min-height: 112px; height: 112px; flex-basis: 112px; margin-top: 10px; }
+  .card-content, .tier-places .card-content { padding: 6px 9px 10px; }
+  .card-content h3 { font-size: 13px; }
+  .tier-index { display: none; }
+  .empty-tier { min-height: 215px; }
+}
+@media (max-width: 480px) {
+  .tier-places, .list-view { grid-template-columns: 1fr; }
+  .tier-places .restaurant-card, .list-view .restaurant-card { min-height: 0; }
+  .card-image, .tier-places .card-image { width: 104px; min-height: 104px; height: 104px; flex-basis: 104px; }
+  .filters { height: auto; }
+}

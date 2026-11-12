@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isManager() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function validRestaurant() {
+      return request.resource.data.keys().hasAll(['name', 'cuisine', 'area', 'mapUrl', 'image', 'published'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+        && request.resource.data.cuisine is string && request.resource.data.cuisine.size() > 0 && request.resource.data.cuisine.size() <= 50
+        && request.resource.data.area is string && request.resource.data.area.size() > 0 && request.resource.data.area.size() <= 50
+        && request.resource.data.mapUrl is string && request.resource.data.mapUrl.matches('https://.*')
+        && request.resource.data.image is string && request.resource.data.image.size() <= 2000
+        && (request.resource.data.image == '' || request.resource.data.image.matches('https://.*'))
+        && request.resource.data.published is bool;
+    }
+
+    function validRanking() {
+      return request.resource.data.keys().hasAll(['tier', 'position', 'recommendation', 'drawback', 'consensus', 'published'])
+        && (request.resource.data.tier == null || request.resource.data.tier in ['S', 'A', 'B', 'C', 'D'])
+        && request.resource.data.position is int && request.resource.data.position >= 0
+        && request.resource.data.recommendation is string && request.resource.data.recommendation.size() <= 500
+        && request.resource.data.drawback is string && request.resource.data.drawback.size() <= 500
+        && request.resource.data.consensus is string && request.resource.data.consensus.size() <= 500
+        && request.resource.data.published is bool
+        && (request.resource.data.published == false || request.resource.data.tier != null);
+    }
+
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    match /restaurants/{restaurantId} {
+      allow read: if isManager() || resource.data.published == true;
+      allow create, update: if isManager() && validRestaurant();
+      allow delete: if false;
+    }
+
+    match /rankings/{restaurantId} {
+      allow read: if isManager() || resource.data.published == true;
+      allow create, update: if isManager() && validRanking();
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

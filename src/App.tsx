@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
-import { restaurants, tierInfo, type Restaurant, type Tier } from './data'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { restaurants as demoRestaurants, tierInfo, type Restaurant, type Tier } from './data'
+import { hasFirebaseConfig } from './firebaseConfig'
 
 const tiers: Tier[] = ['S', 'A', 'B', 'C', 'D']
-const cuisines = ['全部料理', ...Array.from(new Set(restaurants.map((restaurant) => restaurant.cuisine)))]
+const AdminPanel = lazy(() => import('./AdminPanel'))
 
 function Mark({ name }: { name: 'search' | 'grid' | 'list' | 'arrow' | 'map' }) {
   const paths = {
@@ -18,17 +19,19 @@ function Mark({ name }: { name: 'search' | 'grid' | 'list' | 'arrow' | 'map' }) 
 function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   return (
     <article className="restaurant-card">
-      <div className="card-image" style={{ backgroundImage: `url(${restaurant.image})` }}>
+      <div className={`card-image${restaurant.image ? '' : ' no-photo'}`} role="img" aria-label={`${restaurant.name} 餐廳照片`} style={{ backgroundImage: restaurant.image ? `url(${restaurant.image})` : undefined }}>
         <span className={`image-tier ${tierInfo[restaurant.tier].color}`}>{restaurant.tier}</span>
         <span className="image-caption">團體共識</span>
       </div>
+      {restaurant.imageCredit && restaurant.imageCreditUrl && <a className="photo-credit" href={restaurant.imageCreditUrl} target="_blank" rel="noreferrer">照片來源：{restaurant.imageCredit}</a>}
       <div className="card-content">
         <div className="card-meta"><span>{restaurant.cuisine}</span><i />{restaurant.area}</div>
         <h3>{restaurant.name}</h3>
-        <p className="card-note">{restaurant.note}</p>
+        {restaurant.note && <p className="card-note">推薦 · {restaurant.note}</p>}
+        {restaurant.drawback && <p className="card-drawback">缺點 · {restaurant.drawback}</p>}
         <div className="card-footer">
-          <span>{restaurant.reason}</span>
-          <a href={restaurant.mapUrl} target="_blank" rel="noreferrer" aria-label={`在 Google Maps 查看${restaurant.name}`}><Mark name="arrow" /></a>
+          {restaurant.reason && <span>{restaurant.reason}</span>}
+          <a className="map-link" href={restaurant.mapUrl} target="_blank" rel="noreferrer" aria-label={`在 Google Maps 查看${restaurant.name}`}><Mark name="map" /><span>Google Maps</span><Mark name="arrow" /></a>
         </div>
       </div>
     </article>
@@ -36,43 +39,59 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
 }
 
 function App() {
+  const [restaurants, setRestaurants] = useState(demoRestaurants)
+  const [dataState, setDataState] = useState<'demo' | 'loading' | 'live' | 'error'>(hasFirebaseConfig ? 'loading' : 'demo')
   const [view, setView] = useState<'tier' | 'list'>('tier')
   const [query, setQuery] = useState('')
   const [cuisine, setCuisine] = useState('全部料理')
+  const [showAdmin, setShowAdmin] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const cuisines = useMemo(() => ['全部料理', ...Array.from(new Set(restaurants.map((restaurant) => restaurant.cuisine)))], [restaurants])
+
+  useEffect(() => {
+    if (!hasFirebaseConfig) return
+    let active = true
+    void (async () => {
+      try {
+        const { getPublishedRestaurants } = await import('./restaurantService')
+        if (!active) return
+        const publishedRestaurants = await getPublishedRestaurants()
+        if (!active) return
+        setRestaurants(publishedRestaurants)
+        setDataState('live')
+      } catch {
+        if (active) setDataState('error')
+      }
+    })()
+    return () => { active = false }
+  }, [refreshKey])
+
   const filtered = useMemo(() => restaurants.filter((restaurant) => {
     const matchesQuery = `${restaurant.name} ${restaurant.area} ${restaurant.cuisine}`.toLowerCase().includes(query.toLowerCase())
     return matchesQuery && (cuisine === '全部料理' || restaurant.cuisine === cuisine)
-  }), [query, cuisine])
+  }), [restaurants, query, cuisine])
 
   return (
     <div className="site-shell">
       <header className="topbar">
         <a className="brand" href="#top" aria-label="南港吃什麼首頁"><span className="brand-mark">南</span><span>南港吃什麼？<small>THE NANGANG TABLE</small></span></a>
-        <nav aria-label="主要導覽"><a className="nav-active" href="#ranking">排行榜</a><a href="#restaurants">餐廳清單</a><a href="#about">關於榜單</a></nav>
-        <a className="nav-cta" href="#restaurants">找間店吃 <Mark name="arrow" /></a>
+        <nav aria-label="主要導覽"><a className="nav-active" href="#ranking">排行榜</a><a href="#restaurants">餐廳清單</a></nav>
+        <button className="nav-cta" onClick={() => setShowAdmin(true)}>管理榜單</button>
       </header>
 
+      {showAdmin ? <Suspense fallback={<p className="data-state">載入管理工具…</p>}><AdminPanel onClose={() => { setShowAdmin(false); setRefreshKey((key) => key + 1) }} /></Suspense> : <>
       <main id="top">
-        <section className="intro" id="about">
+        <section className="intro">
           <div className="intro-copy">
-            <p className="eyebrow"><span /> NANGANG, TAIPEI · EST. TOGETHER</p>
             <h1>南港吃什麼<span>？</span></h1>
-            <p className="intro-subtitle">我們親自吃過、一起討論的南港餐廳排名。</p>
-            <div className="intro-bottom"><span className="intro-rule" /> <span>不是星星，是我們的共識。</span></div>
-          </div>
-          <div className="intro-art" aria-label="用餐分享插畫">
-            <div className="art-stamp">GOOD<br />FOOD<br /><b>GOOD<br />PEOPLE</b></div>
-            <div className="art-plate"><div className="plate-food"><span /><span /><span /><i /></div></div>
-            <span className="art-caption">EAT · TALK · RANK</span>
-            <span className="art-spark">✳</span>
           </div>
         </section>
 
-        <div className="notice" role="note"><span className="notice-dot" />目前為示範資料，餐廳與評價尚未代表實際排名。<a href="#about">這份榜單怎麼來？</a></div>
+        {dataState === 'demo' && <div className="notice" role="note"><span className="notice-dot" />目前為示範資料，餐廳與評價尚未代表實際排名。</div>}
 
         <section className="ranking-section" id="ranking">
           <div className="section-heading">
-            <div><p className="eyebrow">THE COLLECTIVE RANKING <span className="heading-count">{String(filtered.length).padStart(2, '0')} PLACES</span></p><h2>大家吃過，大家說了算。</h2></div>
+            <div><h2>大家吃過，大家說了算。</h2></div>
             <div className="view-switch" role="group" aria-label="選擇瀏覽方式">
               <button className={view === 'tier' ? 'selected' : ''} onClick={() => setView('tier')} aria-pressed={view === 'tier'}><Mark name="grid" />Tier List</button>
               <button className={view === 'list' ? 'selected' : ''} onClick={() => setView('list')} aria-pressed={view === 'list'}><Mark name="list" />餐廳清單</button>
@@ -85,7 +104,7 @@ function App() {
             <span className="filter-count">{filtered.length} 間店家</span>
           </div>
 
-          {view === 'tier' ? <div className="tier-board">
+          {dataState === 'loading' ? <p className="data-state" role="status">正在載入排行榜…</p> : dataState === 'error' ? <p className="data-state" role="alert">無法連線到排行榜資料，請檢查 Firebase 設定後重新整理。</p> : view === 'tier' ? <div className="tier-board">
             {tiers.map((tier) => {
               const members = filtered.filter((restaurant) => restaurant.tier === tier)
               return <section className={`tier-row ${tierInfo[tier].color}`} key={tier} aria-label={`${tier} Tier：${tierInfo[tier].title}`}>
@@ -95,14 +114,14 @@ function App() {
               </section>
             })}
           </div> : <div className="list-view">
-            {filtered.length ? filtered.map((restaurant) => <RestaurantCard restaurant={restaurant} key={restaurant.id} />) : <p className="no-results">找不到符合條件的餐廳，試試其他關鍵字或料理類型。</p>}
+            {filtered.length ? filtered.map((restaurant) => <RestaurantCard restaurant={restaurant} key={restaurant.id} />) : <p className="no-results">{dataState === 'live' && restaurants.length === 0 ? '目前還沒有已發布的餐廳。' : '找不到符合條件的餐廳，試試其他關鍵字或料理類型。'}</p>}
           </div>}
         </section>
 
-        <section className="coming-soon"><div><span className="coming-icon">＋</span><div><p className="eyebrow">NEXT ON THE TABLE</p><h2>還有想一起評的店？</h2><p>吃過但還沒決定排名的餐廳，會先放進待評價清單。</p></div></div><span className="coming-status">待評價清單 <b>即將開放</b></span></section>
       </main>
 
       <footer><a className="brand footer-brand" href="#top"><span className="brand-mark">南</span><span>南港吃什麼？<small>THE NANGANG TABLE</small></span></a><span>由一頓頓飯和真心話共同編輯。<b>台北・南港</b></span><a href="#top">回到最上方 ↑</a></footer>
+      </>}
     </div>
   )
 }
